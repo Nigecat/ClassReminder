@@ -1,0 +1,7 @@
+[package]
+name = "class-reminder"
+version = "0.1.0"
+authors = ["Nigecat"]
+edition = "2018"
+
+[dependencies]
