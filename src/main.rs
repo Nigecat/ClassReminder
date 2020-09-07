@@ -1,3 +1,4 @@
+#![windows_subsystem = "windows"]
 use net::Period;
 use toml::Value;
 use std::vec::Vec;
@@ -119,6 +120,6 @@ fn main() -> ! {
         }
 
         // Wait one minute before checking again
-        thread::sleep(time::Duration::from_millis(1000));
+        thread::sleep(time::Duration::from_millis(60000));
     }
 }
