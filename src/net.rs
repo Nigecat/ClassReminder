@@ -8,7 +8,7 @@ use reqwest::blocking::Client;
 use select::document::Document;
 
 /// Fetch a user's timetable
-pub fn fetch_timetable(username: String, password: String) -> Vec<Period> {
+pub fn fetch_timetable(username: &String, password: &String) -> Vec<Period> {
     let client = Client::new();
     // Fetch the careylink homepage, this will have the today's timetable on it
     let mut resp = client.get("https://www.careylink.com.au/Pages/home.aspx")

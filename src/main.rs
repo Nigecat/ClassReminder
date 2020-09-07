@@ -7,8 +7,9 @@ mod net;
 
 /// Remind the user about a class
 fn remind_class(period: &Period) {
+    let now = Local::now().time();
     Notification::new()
-        .summary(format!("{} - {} ({}) [{}]", period.block, period.name, period.loc, period.start))
+        .summary(&format!("{} - {} ({}) T-{} minutes", period.block, period.name, period.loc, (period.start - now).num_minutes()).to_owned()[..])
         .show()
         .unwrap_or_default();
 }
@@ -41,7 +42,11 @@ fn main() -> ! {
         .expect("fourth argument must be a number");
 
     // Load the timetable
-    let timetable = net::fetch_timetable(username, password);
+    // We create two copies, the first of which is moved into the scope of the second thread
+    println!("Fetching timetable...");
+    let timetable_a = net::fetch_timetable(&username, &password);
+    let timetable_b = net::fetch_timetable(&username, &password);
+    println!("Retrieved timetable!");
 
     // Spawn a new thread to handle the keyboard events for the shortcut
     thread::spawn(move || {
@@ -58,7 +63,7 @@ fn main() -> ! {
             // Get the last character of the shortcut for the trigger char
             shortcut.chars().last().unwrap().to_uppercase().next().unwrap() as u32,
             move || {
-                let next = next_class(&timetable);
+                let next = next_class(&timetable_a);
                 remind_class(next);
             }
         ).unwrap();
@@ -71,7 +76,7 @@ fn main() -> ! {
     loop {
         // Get the next class, we do not have to worry about the event where we do not have any more classes
         // As this function will exit the program in the case
-        let next = next_class(&timetable);
+        let next = next_class(&timetable_b);
 
         // Get the current time
         let now = Local::now().time();
