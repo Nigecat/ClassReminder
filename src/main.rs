@@ -1,8 +1,7 @@
-use std::env;
 use net::Period;
 use std::vec::Vec;
 use chrono::Local;
-use std::process::exit;
+use std::{env, process, time, thread};
 mod net;
 
 /// Given a timetable find the next class after the current point in time
@@ -20,19 +19,39 @@ fn next_class<'a>(timetable: &'a Vec<Period>) -> &'a Period {
 
     // If we get this far then we don't have any classes after now
     // So we can just exit
-    exit(0);
+    process::exit(0);
 }
 
 fn main() {
     let username: String = env::args().nth(1).expect("first argument must be a username");
     let password: String = env::args().nth(2).expect("second argument must be a password");
-    let timeout: u64 = env::args().nth(3)
+    let timeout: i64 = env::args().nth(3)
         .unwrap_or("5".to_string())
-        .parse::<u64>()
+        .parse::<i64>()
         .expect("third argument must be a number");
 
     // Load the timetable
     let timetable = net::fetch_timetable(username, password);
 
-    println!("{:#?}", next_class(&timetable));
+    // Main reminder loop, this runs every minute and checks the next class
+    loop {
+        // Get the next class, we do not have to worry about the event where we do not have any more classes
+        // As this function will exit the program in the case
+        let next = next_class(&timetable);
+
+        // Get the current time
+        let now = Local::now().time();
+    
+        // Calculate how many minutes from now until the class, 
+        // then subtract the number of minutes before it we want to be reminded
+        let expected = next.start - now - chrono::Duration::minutes(timeout);
+
+        // If the time until we should remind is less than one minute then send a reminder
+        if expected < chrono::Duration::minutes(1) {
+            println!("Reminder!");
+        }
+
+        // Wait one minute before checking again
+        thread::sleep(time::Duration::from_millis(1000));
+    }
 }
