@@ -1,8 +1,17 @@
 use net::Period;
 use std::vec::Vec;
 use chrono::Local;
+use notify_rust::Notification;
 use std::{env, process, time, thread};
 mod net;
+
+/// Remind the user about a class
+fn remind_class(period: &Period) {
+    Notification::new()
+        .summary(format!("{} - {} ({}) [{}]", period.block, period.name, period.loc, period.start))
+        .show()
+        .unwrap_or_default();
+}
 
 /// Given a timetable find the next class after the current point in time
 fn next_class<'a>(timetable: &'a Vec<Period>) -> &'a Period {
@@ -22,16 +31,41 @@ fn next_class<'a>(timetable: &'a Vec<Period>) -> &'a Period {
     process::exit(0);
 }
 
-fn main() {
+fn main() -> ! {
     let username: String = env::args().nth(1).expect("first argument must be a username");
     let password: String = env::args().nth(2).expect("second argument must be a password");
-    let timeout: i64 = env::args().nth(3)
+    let shortcut: String = env::args().nth(3).expect("third argument must be a shortcut");
+    let timeout: i64 = env::args().nth(4)
         .unwrap_or("5".to_string())
         .parse::<i64>()
-        .expect("third argument must be a number");
+        .expect("fourth argument must be a number");
 
     // Load the timetable
     let timetable = net::fetch_timetable(username, password);
+
+    // Spawn a new thread to handle the keyboard events for the shortcut
+    thread::spawn(move || {
+        // Calculate the modifiers for this shortcut
+        let mut modifiers = 0;
+        if shortcut.contains("control") { modifiers |= hotkey::modifiers::CONTROL };
+        if shortcut.contains("shift") { modifiers |= hotkey::modifiers::SHIFT };
+        if shortcut.contains("alt") { modifiers |= hotkey::modifiers::ALT };
+        if shortcut.contains("super") { modifiers |= hotkey::modifiers::SUPER };
+
+        let mut hk = hotkey::Listener::new();
+        hk.register_hotkey(
+            modifiers,
+            // Get the last character of the shortcut for the trigger char
+            shortcut.chars().last().unwrap().to_uppercase().next().unwrap() as u32,
+            move || {
+                let next = next_class(&timetable);
+                remind_class(next);
+            }
+        ).unwrap();
+        hk.listen();
+    });
+
+
 
     // Main reminder loop, this runs every minute and checks the next class
     loop {
@@ -48,7 +82,7 @@ fn main() {
 
         // If the time until we should remind is less than one minute then send a reminder
         if expected < chrono::Duration::minutes(1) {
-            println!("Reminder!");
+            remind_class(next);
         }
 
         // Wait one minute before checking again

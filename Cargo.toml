@@ -1,10 +1,12 @@
 [package]
 name = "class-reminder"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Nigecat"]
 edition = "2018"
 
 [dependencies]
 chrono = "0.4"
 select = "0.5.0"
+hotkey = "0.3.1"
+notify-rust = "4.0.0"
 reqwest = { version = "0.10.8", features = ["blocking"] }
