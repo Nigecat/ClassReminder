@@ -5,3 +5,5 @@ authors = ["Nigecat"]
 edition = "2018"
 
 [dependencies]
+select = "0.5.0"
+reqwest = { version = "0.10.8", features = ["blocking"] }
