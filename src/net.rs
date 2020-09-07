@@ -1,6 +1,7 @@
 /* Anything network related goes here */
 use std::io::Read;
 use std::vec::Vec;
+use chrono::NaiveTime;
 use select::node::Node;
 use select::predicate::Class;
 use reqwest::blocking::Client;
@@ -27,8 +28,8 @@ pub fn fetch_timetable(username: String, password: String) -> Vec<Period> {
 
 #[derive(Debug)]
 pub struct Period {
-    /// The time this period starts at, should be a string like '10:35 AM'
-    start: String,
+    /// The time this period starts at
+    start: NaiveTime,
     /// The location of this class, for online learning this is either 'STUDY' or 'CONF'
     loc: String,
     /// The block this class is in, this is usually in the format 'PERIOD 1' but sometimes may be others such as 'ROLL CALL'
@@ -66,7 +67,7 @@ fn format_timetable(raw: Node) -> Vec<Period> {
         //  3 - Location (CONF/STUDY)
         timetable.push(Period {
             block: data[0].clone(),
-            start: data[1].clone(),
+            start: NaiveTime::parse_from_str(&data[1], "%I:%M %p").expect("unable to parse class start time"),
             name: data[2].clone(),
             loc: data[3].clone(),
         });
