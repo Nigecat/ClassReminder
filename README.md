@@ -18,5 +18,5 @@ The username and password fields are for your careylink login details (duh).
 The shortcut is a binding to trigger a notification that displays when the next class is, this is useful for checking how much more time you have until class. The available keys for this are 'control' 'shift' 'alt' and 'super' (windows key). The last character in this must be the trigger key for it [a-z].    
 The timeout is the number of minutes before the class starts you want to notification to appear.
 
-After the configuration is done you can double click the exe to start the program, wait ~5 minutes then hit your shortcut to verify the application loaded the timetable properly/displays the correct class.
+After the configuration is done you can double click the exe to start the program, wait ~5 minutes (careylink can be pretty slow so it takes awhile to load the timetable) then hit your shortcut to verify the application loaded the timetable properly/displays the correct class.
 If nothing happens please contact me and I can help you debug it.
