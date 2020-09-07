@@ -29,13 +29,13 @@ pub fn fetch_timetable(username: String, password: String) -> Vec<Period> {
 #[derive(Debug)]
 pub struct Period {
     /// The time this period starts at
-    start: NaiveTime,
+    pub start: NaiveTime,
     /// The location of this class, for online learning this is either 'STUDY' or 'CONF'
-    loc: String,
+    pub loc: String,
     /// The block this class is in, this is usually in the format 'PERIOD 1' but sometimes may be others such as 'ROLL CALL'
-    block: String,
+    pub block: String,
     /// The name of this class, e.g 'GEOGRAPHY'
-    name: String,
+    pub name: String,
 }
 
 /// Format the raw html of a timetable into something we can process
