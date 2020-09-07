@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 chrono = "0.4"
+toml = "0.5.6"
 select = "0.5.0"
 hotkey = "0.3.1"
 notify-rust = "4.0.0"
