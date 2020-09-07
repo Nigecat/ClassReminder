@@ -1,8 +1,9 @@
 use net::Period;
+use toml::Value;
 use std::vec::Vec;
 use chrono::Local;
 use notify_rust::Notification;
-use std::{env, process, time, thread};
+use std::{iter, fs, path, env, process, time, thread};
 mod net;
 
 /// Remind the user about a class
@@ -33,13 +34,40 @@ fn next_class<'a>(timetable: &'a Vec<Period>) -> &'a Period {
 }
 
 fn main() -> ! {
-    let username: String = env::args().nth(1).expect("first argument must be a username");
-    let password: String = env::args().nth(2).expect("second argument must be a password");
-    let shortcut: String = env::args().nth(3).expect("third argument must be a shortcut");
-    let timeout: i64 = env::args().nth(4)
-        .unwrap_or("5".to_string())
-        .parse::<i64>()
-        .expect("fourth argument must be a number");
+    // Check if our config file exists
+    let cfg = path::Path::new("config.toml").exists();
+    let data = fs::read_to_string("config.toml").unwrap_or_default().parse::<Value>().expect("invalid toml in config file");
+
+    // Set our configurations from the config file
+    // Default to expecting command line arguments if we do not have a config file
+    let username: String = if cfg {
+        data["auth"]["username"].as_str().expect("username not found in config.toml").to_string()
+    } else {
+        env::args().nth(1).expect("first argument must be a username")
+    };
+    let password: String = if cfg {
+        data["auth"]["password"].as_str().expect("password not found in config.toml").to_string()
+    } else {
+        env::args().nth(2).expect("second argument must be a password")
+    };
+    let shortcut: String = if cfg {
+        data["config"]["shortcut"].as_str().expect("shortcut not found in config.toml").to_string()
+    } else {
+        env::args().nth(3).expect("third argument must be a shortcut")
+    };
+    let timeout: i64 = if cfg {
+        data["config"]["timeout"].as_str()
+            .expect("timeout not found in config.toml")
+            .parse::<i64>()
+            .expect("timeout must be a number")
+    } else {
+        env::args().nth(4)
+            .unwrap_or("5".to_string())
+            .parse::<i64>()
+            .expect("fourth argument must be a number")
+    };
+
+    println!("Recieved arguments: {} | {} | {} | {}", username, iter::repeat("*").take(password.chars().count()).collect::<String>(), shortcut, timeout);
 
     // Load the timetable
     // We create two copies, the first of which is moved into the scope of the second thread
